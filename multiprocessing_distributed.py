@@ -75,6 +75,10 @@ best_acc1 = 0
 def main():
     args = parser.parse_args()
 
+    mp.spawn(main_worker, nprocs=4, args=(4, args))
+
+
+def main_worker(gpu, ngpus_per_node, args):
     if args.seed is not None:
         random.seed(args.seed)
         torch.manual_seed(args.seed)
@@ -84,11 +88,7 @@ def main():
                       'which can slow down your training considerably! '
                       'You may see unexpected behavior when restarting '
                       'from checkpoints.')
-
-    mp.spawn(main_worker, nprocs=4, args=(4, args))
-
-
-def main_worker(gpu, ngpus_per_node, args):
+                      
     global best_acc1
 
     dist.init_process_group(backend='nccl', init_method='tcp://127.0.0.1:23456', world_size=4, rank=gpu)
